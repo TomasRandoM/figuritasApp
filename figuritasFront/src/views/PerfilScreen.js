@@ -1,27 +1,33 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  View, Text, FlatList, StyleSheet, RefreshControl, ActivityIndicator,
+  View, Text, FlatList, StyleSheet, RefreshControl, ActivityIndicator, Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import UsuarioController from '../controllers/UsuarioController';
 import PublicacionController from '../controllers/PublicacionController';
 import FiguritaCard from '../components/FiguritaCard';
-import { CURRENT_USER_ID } from '../config';
+import { useAuth } from '../contexts/AuthContext';
 
-export default function PerfilScreen() {
+export default function PerfilScreen({ route }) {
+  const { currentUser, logout } = useAuth();
+  const userIdParam = route?.params?.userId;
+  const targetUserId = userIdParam ?? currentUser?.id;
+  const isOwnProfile = !userIdParam || userIdParam === currentUser?.id;
+
   const [usuario, setUsuario] = useState(null);
   const [publicaciones, setPublicaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const load = useCallback(async () => {
+    if (!targetUserId) return;
     setLoading(true);
     setError(null);
     try {
       const [u, pubs] = await Promise.all([
-        UsuarioController.getById(CURRENT_USER_ID),
-        PublicacionController.getByUsuario(CURRENT_USER_ID),
+        UsuarioController.getById(targetUserId),
+        PublicacionController.getByUsuario(targetUserId),
       ]);
       setUsuario(u);
       setPublicaciones(pubs);
@@ -30,7 +36,7 @@ export default function PerfilScreen() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [targetUserId]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -38,7 +44,14 @@ export default function PerfilScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Text style={styles.headerTitle}>Perfil</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.headerTitle}>{isOwnProfile ? 'Perfil' : 'Perfil de usuario'}</Text>
+        {isOwnProfile && (
+          <Pressable onPress={logout} hitSlop={8}>
+            <Text style={styles.logout}>Cerrar sesión</Text>
+          </Pressable>
+        )}
+      </View>
 
       <View style={styles.userBox}>
         {usuario ? (
@@ -55,7 +68,7 @@ export default function PerfilScreen() {
         )}
       </View>
 
-      <Text style={styles.section}>Mis Figuritas</Text>
+      <Text style={styles.section}>{isOwnProfile ? 'Mis Figuritas' : 'Figuritas publicadas'}</Text>
 
       <FlatList
         data={publicaciones}
@@ -68,7 +81,7 @@ export default function PerfilScreen() {
         ListEmptyComponent={
           !loading ? (
             <Text style={styles.empty}>
-              {error ? `Error: ${error}` : 'No tenés figuritas publicadas.'}
+              {error ? `Error: ${error}` : (isOwnProfile ? 'No tenés figuritas publicadas.' : 'Este usuario no tiene publicaciones.')}
             </Text>
           ) : null
         }
@@ -81,7 +94,9 @@ export default function PerfilScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#fafafa' },
-  headerTitle: { fontSize: 14, color: '#666', marginBottom: 8 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  headerTitle: { fontSize: 14, color: '#666' },
+  logout: { fontSize: 13, color: '#a00', textDecorationLine: 'underline' },
   userBox: {
     borderWidth: 1, borderColor: '#222', borderRadius: 18, padding: 16, marginBottom: 12,
   },

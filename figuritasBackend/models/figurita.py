@@ -2,11 +2,12 @@ from db import get_connection
 
 
 class Figurita:
-    def __init__(self, id, jugador, pais, nro_figurita):
+    def __init__(self, id, jugador, pais, nro_figurita, imagen_url=None):
         self.id = id
         self.jugador = jugador
         self.pais = pais
         self.nro_figurita = nro_figurita
+        self.imagen_url = imagen_url
 
     @classmethod
     def from_row(cls, row):
@@ -15,6 +16,7 @@ class Figurita:
             jugador=row["jugador"],
             pais=row["pais"],
             nro_figurita=row["nro_figurita"],
+            imagen_url=row.get("imagen_url"),
         )
 
     @classmethod

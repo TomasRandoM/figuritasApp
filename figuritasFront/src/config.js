@@ -1,3 +1,2 @@
-// ID del usuario "logueado" (mock — la app no tiene login).
-// Coincide con el primer usuario sembrado en database.sql.
-export const CURRENT_USER_ID = 1;
+// El usuario actual ya no se hardcodea: se obtiene de AuthContext después del login.
+// Archivo mantenido vacío por compatibilidad; se puede borrar cuando no haya imports.

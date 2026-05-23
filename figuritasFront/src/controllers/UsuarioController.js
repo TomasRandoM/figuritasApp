@@ -16,4 +16,9 @@ export default class UsuarioController {
     const data = await apiPost('/usuarios/', payload);
     return new Usuario(data);
   }
+
+  static async login(mail, password) {
+    const data = await apiPost('/usuarios/login', { mail, password });
+    return new Usuario(data);
+  }
 }

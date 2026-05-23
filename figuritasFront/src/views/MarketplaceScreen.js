@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import PublicacionController from '../controllers/PublicacionController';
 import FiguritaCard from '../components/FiguritaCard';
 
-export default function MarketplaceScreen() {
+export default function MarketplaceScreen({ navigation }) {
   const [query, setQuery] = useState('');
   const [pubs, setPubs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -54,6 +54,7 @@ export default function MarketplaceScreen() {
             figurita={item.figurita}
             cantidad={item.cantidad}
             usuario={item.usuario}
+            onUserPress={() => navigation.navigate('UserProfile', { userId: item.usuario.id })}
           />
         )}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={() => load(query)} />}

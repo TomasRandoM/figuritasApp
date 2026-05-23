@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, TextInput, Pressable, StyleSheet, Alert, ActivityIndicator,
+  View, Text, TextInput, Pressable, StyleSheet, Alert, ActivityIndicator, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import FiguritaController from '../controllers/FiguritaController';
 import PublicacionController from '../controllers/PublicacionController';
-import { CURRENT_USER_ID } from '../config';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function PublicarScreen({ navigation }) {
+  const { currentUser } = useAuth();
   const [nro, setNro] = useState('');
   const [cantidad, setCantidad] = useState('');
   const [figurita, setFigurita] = useState(null);
@@ -50,11 +51,15 @@ export default function PublicarScreen({ navigation }) {
       Alert.alert('Cantidad inválida', 'Ingresá una cantidad mayor a cero.');
       return;
     }
+    if (!currentUser) {
+      Alert.alert('Sesión inválida', 'Volvé a iniciar sesión.');
+      return;
+    }
     setSending(true);
     try {
       await PublicacionController.create({
         figuritaId: figurita.id,
-        usuarioId: CURRENT_USER_ID,
+        usuarioId: currentUser.id,
         cantidad: cant,
       });
       Alert.alert('Publicación enviada', `${figurita.jugador} x${cant}`);
@@ -94,8 +99,18 @@ export default function PublicarScreen({ navigation }) {
         ) : figurita ? (
           <View style={styles.previewRow}>
             <View style={styles.miniCard}>
-              <Text style={styles.miniText}>{figurita.pais}</Text>
-              <Text style={styles.miniText}>Número{'\n'}camiseta</Text>
+              {figurita.imagenUrl ? (
+                <Image
+                  source={{ uri: figurita.imagenUrl }}
+                  style={styles.previewImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <>
+                  <Text style={styles.miniText}>{figurita.pais}</Text>
+                  <Text style={styles.miniText}>Número{'\n'}camiseta</Text>
+                </>
+              )}
             </View>
             <View style={{ marginLeft: 12, flex: 1 }}>
               <Text style={styles.jugador} numberOfLines={1}>{figurita.jugador}</Text>
@@ -136,8 +151,9 @@ const styles = StyleSheet.create({
   previewRow: { flexDirection: 'row', alignItems: 'center' },
   miniCard: {
     width: 84, height: 84, borderRadius: 14, borderWidth: 1, borderColor: '#222',
-    alignItems: 'center', justifyContent: 'center', padding: 4,
+    alignItems: 'center', justifyContent: 'center', padding: 4, overflow: 'hidden',
   },
+  previewImage: { width: '100%', height: '100%', borderRadius: 12 },
   miniText: { fontSize: 10, textAlign: 'center' },
   jugador: { fontSize: 20, fontWeight: '700' },
   placeholder: { textAlign: 'center', color: '#666' },

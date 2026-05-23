@@ -4,6 +4,7 @@ def serialize(figurita):
         "jugador": figurita.jugador,
         "pais": figurita.pais,
         "nroFigurita": figurita.nro_figurita,
+        "imagenUrl": figurita.imagen_url,
     }
 
 

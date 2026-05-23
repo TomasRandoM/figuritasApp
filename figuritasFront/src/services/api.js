@@ -3,9 +3,9 @@ import { Platform } from 'react-native';
 // 10.0.2.2 es el alias del emulador Android para el localhost de la máquina host.
 // Si corrés en un dispositivo físico, reemplazá HOST por la IP LAN de tu PC.
 const HOST = Platform.select({
-  android: 'http://10.0.2.2:5000',
+  android: 'http://192.168.1.34:5000',
   ios: 'http://localhost:5000',
-  default: 'http://localhost:5000',
+  default: 'http://192.168.1.34:5000',
 });
 
 export const API_BASE = `${HOST}/api`;

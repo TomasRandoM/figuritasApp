@@ -1,12 +1,18 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
 
-export default function FiguritaCard({ figurita, cantidad, usuario }) {
+export default function FiguritaCard({ figurita, cantidad, usuario, onUserPress }) {
   return (
     <View style={styles.card}>
       <View style={styles.miniCard}>
-        <Text style={styles.miniText}>{figurita.pais}</Text>
-        <Text style={styles.miniText}>Número{'\n'}figurita</Text>
+        {figurita.imagenUrl ? (
+          <Image source={{ uri: figurita.imagenUrl }} style={styles.image} resizeMode="cover" />
+        ) : (
+          <>
+            <Text style={styles.miniText}>{figurita.pais}</Text>
+            <Text style={styles.miniText}>Número{'\n'}figurita</Text>
+          </>
+        )}
       </View>
 
       <View style={styles.info}>
@@ -17,7 +23,17 @@ export default function FiguritaCard({ figurita, cantidad, usuario }) {
 
       <View style={styles.right}>
         {cantidad != null && <Text style={styles.cantidad}>x{cantidad}</Text>}
-        {usuario && <Text style={styles.usuario} numberOfLines={1}>{usuario.nombre}</Text>}
+        {usuario && (
+          onUserPress ? (
+            <Pressable onPress={onUserPress} hitSlop={6}>
+              <Text style={[styles.usuario, styles.usuarioLink]} numberOfLines={1}>
+                {usuario.nombre}
+              </Text>
+            </Pressable>
+          ) : (
+            <Text style={styles.usuario} numberOfLines={1}>{usuario.nombre}</Text>
+          )
+        )}
       </View>
     </View>
   );
@@ -44,7 +60,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
     padding: 4,
+    overflow: 'hidden',
   },
+  image: { width: '100%', height: '100%', borderRadius: 12 },
   miniText: { fontSize: 10, textAlign: 'center' },
   info: { flex: 1 },
   jugador: { fontSize: 18, fontWeight: '700' },
@@ -52,4 +70,5 @@ const styles = StyleSheet.create({
   right: { alignItems: 'flex-end', marginLeft: 8, minWidth: 60 },
   cantidad: { fontSize: 16, fontWeight: '600' },
   usuario: { fontSize: 12, color: '#666', marginTop: 2 },
+  usuarioLink: { color: '#1e6fd9', textDecorationLine: 'underline' },
 });
