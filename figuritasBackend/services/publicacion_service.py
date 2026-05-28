@@ -19,6 +19,13 @@ class PublicacionService:
         return pub
 
     @staticmethod
+    def delete(id):
+        pub = PublicacionDAO.delete(id)
+        if not pub:
+            raise NotFound("Publicacion no encontrada")
+        return pub
+
+    @staticmethod
     def create(figurita_id, usuario_id, cantidad):
         try:
             cantidad = int(cantidad)

@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from '../services/api';
+import { apiGet, apiPost, apiDelete } from '../services/api';
 import PublicacionFigurita from '../models/PublicacionFigurita';
 
 export default class PublicacionController {
@@ -20,5 +20,17 @@ export default class PublicacionController {
   static async create({ figuritaId, usuarioId, cantidad }) {
     const data = await apiPost('/publicaciones/', { figuritaId, usuarioId, cantidad });
     return new PublicacionFigurita(data);
+  }
+
+  static async delete({publicacionId}) {
+    try {
+      const data = await apiDelete(`/publicaciones/delete/${publicacionId}`)
+      if (data) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      return false;
+    }
   }
 }

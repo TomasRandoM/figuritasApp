@@ -26,6 +26,13 @@ def get_publicacion(id):
         return jsonify({"error": str(e)}), 404
     return jsonify(publicacion_view.serialize(pub))
 
+@publicacion_bp.route("/delete/<int:id>", methods=["DELETE"])
+def delete_publicacion(id):
+    try:
+        pub = PublicacionService.delete(id)
+    except NotFound as e:
+        return jsonify({"error": str(e)}), 404
+    return jsonify(publicacion_view.serialize_deleteAnswer(pub))
 
 @publicacion_bp.route("/", methods=["POST"])
 def create_publicacion():

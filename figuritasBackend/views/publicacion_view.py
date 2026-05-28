@@ -10,6 +10,10 @@ def serialize(pub):
         "usuario": serialize_usuario(pub.usuario),
     }
 
+def serialize_deleteAnswer(pub):
+    return {
+        "success": True,
+    }
 
 def serialize_list(pubs):
     return [serialize(p) for p in pubs]

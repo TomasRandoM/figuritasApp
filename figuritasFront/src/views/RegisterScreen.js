@@ -43,7 +43,10 @@ export default function RegisterScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 24 }}
+        >
         <Text style={styles.title}>Crear cuenta</Text>
 
         <View style={styles.formBox}>
@@ -75,12 +78,15 @@ export default function RegisterScreen({ navigation }) {
           <GooglePlacesAutocomplete
             placeholder="Buscar dirección"
             fetchDetails={true}
+            debounce={400}
+            enablePoweredByContainer={false}
+            nearbyPlacesAPI="GooglePlacesSearch"
+            minLength={2}
             onPress={(data, details = null) => {
-
-              const direccionSeleccionada = data.description;
-
-              setDireccion(direccionSeleccionada);
-
+              setDireccion(data.description);
+            }}
+            onFail={(error) => {
+              console.log("GOOGLE ERROR:", error);
             }}
             query={{
               key: GOOGLE_API_KEY,
@@ -88,6 +94,9 @@ export default function RegisterScreen({ navigation }) {
               components: 'country:ar',
             }}
             styles={{
+              container: {
+                flex: 0,
+              },
               textInput: {
                 borderWidth: 1,
                 borderColor: '#222',
@@ -96,7 +105,14 @@ export default function RegisterScreen({ navigation }) {
                 paddingVertical: 10,
                 marginVertical: 6,
                 backgroundColor: '#fff',
-              }
+              },
+              listView: {
+                backgroundColor: '#fff',
+                borderWidth: 1,
+                borderColor: '#ccc',
+                zIndex: 9999,
+                elevation: 5,
+              },
             }}
           />
         </View>

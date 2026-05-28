@@ -37,14 +37,22 @@ class FiguritaDAO:
     def search(cls, query):
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
+
         like = f"%{query}%"
-        cursor.execute(
+
+        sql = (
             "SELECT * FROM figuritas "
             "WHERE jugador LIKE %s OR pais LIKE %s OR nro_figurita LIKE %s "
-            "ORDER BY nro_figurita",
-            (like, like, like),
+            "ORDER BY nro_figurita"
         )
+
+        params = (like, like, like)
+
+        cursor.execute(sql, params)
+
         rows = cursor.fetchall()
+
         cursor.close()
         conn.close()
+
         return [cls._from_row(r) for r in rows]

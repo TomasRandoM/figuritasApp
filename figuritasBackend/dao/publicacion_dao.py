@@ -101,3 +101,16 @@ class PublicacionDAO:
         cursor.close()
         conn.close()
         return cls.get_by_id(new_id)
+
+    @classmethod
+    def delete(cls, publicacion_id):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM publicaciones WHERE id = %s",
+            (publicacion_id,),
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return True

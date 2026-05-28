@@ -8,6 +8,12 @@ import UsuarioController from '../controllers/UsuarioController';
 import PublicacionController from '../controllers/PublicacionController';
 import FiguritaCard from '../components/FiguritaCard';
 import { useAuth } from '../contexts/AuthContext';
+import { Ionicons } from '@expo/vector-icons';
+
+const NAVY  = '#0D1B2A';
+const GOLD  = '#D4AF37';
+const MUTED = 'rgba(212,175,55,0.30)';
+const LIGHT = '#E0E1DD';
 
 export default function PerfilScreen({ route }) {
   const { currentUser, logout } = useAuth();
@@ -40,19 +46,50 @@ export default function PerfilScreen({ route }) {
 
   useEffect(() => { load(); }, [load]);
 
+  const handleDelete = async (publicacionId) => {
+    try {
+      console.log(123);
+      const ok = await PublicacionController.delete({
+        publicacionId,
+      });
+
+      if (ok) {
+        setPublicaciones((prev) =>
+          prev.filter((p) => p.id !== publicacionId)
+        );
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const totalDisponibles = publicaciones.reduce((acc, p) => acc + p.cantidad, 0);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      
       <View style={styles.headerRow}>
-        <Text style={styles.headerTitle}>{isOwnProfile ? 'Perfil' : 'Perfil de usuario'}</Text>
+
+        <View style={styles.headerLeft}>
+
+          <View style={styles.headerAccent} />
+
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.headerSub}>MUNDIAL 2026</Text>
+            <Text style={styles.headerTitle}>
+              {isOwnProfile ? 'Perfil' : 'Perfil de usuario'}
+            </Text>
+          </View>
+
+        </View>
+
         {isOwnProfile && (
           <Pressable onPress={logout} hitSlop={8}>
             <Text style={styles.logout}>Cerrar sesión</Text>
           </Pressable>
         )}
-      </View>
 
+      </View>
       <View style={styles.userBox}>
         {usuario ? (
           <>
@@ -74,8 +111,15 @@ export default function PerfilScreen({ route }) {
         data={publicaciones}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
-          <FiguritaCard figurita={item.figurita} cantidad={item.cantidad} />
-        )}
+        <View style={styles.cardContainer}>
+          <FiguritaCard
+            figurita={item.figurita}
+            cantidad={item.cantidad}
+            onPerfil = {isOwnProfile}
+            onDelete = {() => handleDelete(item.id)}
+          />  
+        </View>
+      )}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
         contentContainerStyle={{ paddingBottom: 24 }}
         ListEmptyComponent={
@@ -93,16 +137,21 @@ export default function PerfilScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#fafafa' },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  headerTitle: { fontSize: 14, color: '#666' },
-  logout: { fontSize: 13, color: '#a00', textDecorationLine: 'underline' },
-  userBox: {
-    borderWidth: 1, borderColor: '#222', borderRadius: 18, padding: 16, marginBottom: 12,
-  },
-  line: { fontSize: 14, marginVertical: 2 },
-  section: { fontSize: 22, fontWeight: '700', textAlign: 'center', marginVertical: 12 },
-  footer: { textAlign: 'right', marginTop: 8, fontSize: 13 },
+  container: { flex: 1, paddingHorizontal: 16, backgroundColor: NAVY },
+  logout: { fontSize: 13, color: GOLD, borderWidth: 1, borderColor: 'rgba(212,175,55,0.30)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, overflow: 'hidden'},
+  userBox: { backgroundColor: '#132238', borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)', borderRadius: 24, padding: 20, marginBottom: 20,
+},
+  line: { fontSize: 14, marginVertical: 2, color: LIGHT },
+  section: {fontSize: 24, fontWeight: '700', color: GOLD, extAlign: 'center', marginBottom: 18},
+  footer: { textAlign: 'right', marginTop: 10, marginBottom: 12, fontSize: 14, color: MUTED},
   empty: { textAlign: 'center', marginTop: 24, color: '#666' },
   error: { color: '#a00' },
+
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, marginBottom: 18 },
+  header: { flexDirection: 'row', alignItems: 'center', marginTop: 8, marginBottom: 18, gap: 10 },
+  headerTextWrap: { gap: 1 },
+  headerSub: { fontSize: 10, fontWeight: '700', color: GOLD, letterSpacing: 2.5 },
+  headerTitle: { fontSize: 26, fontWeight: '800', color: LIGHT, letterSpacing: 0.3 },
+  headerAccent: { width: 4, height: 44, borderRadius: 4, backgroundColor: GOLD },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10},
 });
