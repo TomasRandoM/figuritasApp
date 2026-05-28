@@ -1,25 +1,20 @@
 from db import get_connection
+from entities.usuario import Usuario
 
 
-class Usuario:
-    def __init__(self, id, apellido, nombre, fecha_nacimiento, mail, direccion, password=None):
-        self.id = id
-        self.apellido = apellido
-        self.nombre = nombre
-        self.fecha_nacimiento = fecha_nacimiento
-        self.mail = mail
-        self.direccion = direccion
-        self.password = password
-
-    @classmethod
-    def from_row(cls, row):
-        return cls(
+class UsuarioDAO:
+    @staticmethod
+    def _from_row(row):
+        return Usuario(
             id=row["id"],
             apellido=row["apellido"],
             nombre=row["nombre"],
             fecha_nacimiento=row["fecha_nacimiento"],
             mail=row["mail"],
             direccion=row["direccion"],
+            latitud=row.get("latitud"),
+            longitud=row.get("longitud"),
+            maps_link=row.get("maps_link"),
             password=row.get("password"),
         )
 
@@ -31,7 +26,7 @@ class Usuario:
         rows = cursor.fetchall()
         cursor.close()
         conn.close()
-        return [cls.from_row(r) for r in rows]
+        return [cls._from_row(r) for r in rows]
 
     @classmethod
     def get_by_id(cls, id):
@@ -41,7 +36,7 @@ class Usuario:
         row = cursor.fetchone()
         cursor.close()
         conn.close()
-        return cls.from_row(row) if row else None
+        return cls._from_row(row) if row else None
 
     @classmethod
     def get_by_mail(cls, mail):
@@ -51,16 +46,17 @@ class Usuario:
         row = cursor.fetchone()
         cursor.close()
         conn.close()
-        return cls.from_row(row) if row else None
+        return cls._from_row(row) if row else None
 
     @classmethod
-    def create(cls, apellido, nombre, fecha_nacimiento, mail, direccion, password):
+    def create(cls, apellido, nombre, fecha_nacimiento, mail, direccion, latitud, longitud, maps_link, password):
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO usuarios (apellido, nombre, fecha_nacimiento, mail, direccion, password) "
-            "VALUES (%s, %s, %s, %s, %s, %s)",
-            (apellido, nombre, fecha_nacimiento, mail, direccion, password),
+            "INSERT INTO usuarios "
+            "(apellido, nombre, fecha_nacimiento, mail, direccion, latitud, longitud, maps_link, password) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            (apellido, nombre, fecha_nacimiento, mail, direccion, latitud, longitud, maps_link, password),
         )
         new_id = cursor.lastrowid
         conn.commit()

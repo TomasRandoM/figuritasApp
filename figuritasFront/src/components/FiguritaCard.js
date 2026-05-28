@@ -10,7 +10,7 @@ export default function FiguritaCard({ figurita, cantidad, usuario, onUserPress 
         ) : (
           <>
             <Text style={styles.miniText}>{figurita.pais}</Text>
-            <Text style={styles.miniText}>Número{'\n'}figurita</Text>
+            <Text style={styles.miniText}>{figurita.nroFigurita + '\n'} {figurita.jugador}</Text>
           </>
         )}
       </View>

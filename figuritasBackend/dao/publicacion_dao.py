@@ -1,31 +1,28 @@
 from db import get_connection
-from models.figurita import Figurita
-from models.usuario import Usuario
+from entities.figurita import Figurita
+from entities.usuario import Usuario
+from entities.publicacion import PublicacionFigurita
 
 
-class PublicacionFigurita:
-    def __init__(self, id, figurita, usuario, cantidad):
-        self.id = id
-        self.figurita = figurita
-        self.usuario = usuario
-        self.cantidad = cantidad
-
+class PublicacionDAO:
     _BASE_QUERY = (
         "SELECT p.id AS pub_id, p.cantidad, "
-        "f.id AS fig_id, f.jugador, f.pais, f.nro_figurita, "
-        "u.id AS usu_id, u.apellido, u.nombre, u.fecha_nacimiento, u.mail, u.direccion "
+        "f.id AS fig_id, f.jugador, f.pais, f.nro_figurita, f.imagen_url, "
+        "u.id AS usu_id, u.apellido, u.nombre, u.fecha_nacimiento, u.mail, u.direccion, "
+        "u.latitud, u.longitud, u.maps_link "
         "FROM publicaciones p "
         "JOIN figuritas f ON p.figurita_id = f.id "
         "JOIN usuarios u ON p.usuario_id = u.id"
     )
 
-    @classmethod
-    def _build(cls, row):
+    @staticmethod
+    def _from_row(row):
         figurita = Figurita(
             id=row["fig_id"],
             jugador=row["jugador"],
             pais=row["pais"],
             nro_figurita=row["nro_figurita"],
+            imagen_url=row.get("imagen_url"),
         )
         usuario = Usuario(
             id=row["usu_id"],
@@ -34,8 +31,11 @@ class PublicacionFigurita:
             fecha_nacimiento=row["fecha_nacimiento"],
             mail=row["mail"],
             direccion=row["direccion"],
+            latitud=row.get("latitud"),
+            longitud=row.get("longitud"),
+            maps_link=row.get("maps_link"),
         )
-        return cls(
+        return PublicacionFigurita(
             id=row["pub_id"],
             figurita=figurita,
             usuario=usuario,
@@ -50,7 +50,7 @@ class PublicacionFigurita:
         rows = cursor.fetchall()
         cursor.close()
         conn.close()
-        return [cls._build(r) for r in rows]
+        return [cls._from_row(r) for r in rows]
 
     @classmethod
     def get_by_id(cls, id):
@@ -60,7 +60,7 @@ class PublicacionFigurita:
         row = cursor.fetchone()
         cursor.close()
         conn.close()
-        return cls._build(row) if row else None
+        return cls._from_row(row) if row else None
 
     @classmethod
     def get_by_usuario(cls, usuario_id):
@@ -70,7 +70,7 @@ class PublicacionFigurita:
         rows = cursor.fetchall()
         cursor.close()
         conn.close()
-        return [cls._build(r) for r in rows]
+        return [cls._from_row(r) for r in rows]
 
     @classmethod
     def search(cls, query):
@@ -86,7 +86,7 @@ class PublicacionFigurita:
         rows = cursor.fetchall()
         cursor.close()
         conn.close()
-        return [cls._build(r) for r in rows]
+        return [cls._from_row(r) for r in rows]
 
     @classmethod
     def create(cls, figurita_id, usuario_id, cantidad):

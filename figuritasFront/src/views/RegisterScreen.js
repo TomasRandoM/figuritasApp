@@ -5,6 +5,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '../contexts/AuthContext';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 export default function RegisterScreen({ navigation }) {
   const { register } = useAuth();
@@ -15,6 +16,7 @@ export default function RegisterScreen({ navigation }) {
   const [fechaNacimiento, setFechaNacimiento] = useState('');
   const [direccion, setDireccion] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   const onSubmit = async () => {
     if (!nombre.trim() || !apellido.trim() || !mail.trim() || !password) {
@@ -70,11 +72,32 @@ export default function RegisterScreen({ navigation }) {
             onChangeText={setFechaNacimiento}
             autoCapitalize="none"
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Dirección"
-            value={direccion}
-            onChangeText={setDireccion}
+          <GooglePlacesAutocomplete
+            placeholder="Buscar dirección"
+            fetchDetails={true}
+            onPress={(data, details = null) => {
+
+              const direccionSeleccionada = data.description;
+
+              setDireccion(direccionSeleccionada);
+
+            }}
+            query={{
+              key: GOOGLE_API_KEY,
+              language: 'es',
+              components: 'country:ar',
+            }}
+            styles={{
+              textInput: {
+                borderWidth: 1,
+                borderColor: '#222',
+                borderRadius: 14,
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+                marginVertical: 6,
+                backgroundColor: '#fff',
+              }
+            }}
           />
         </View>
 

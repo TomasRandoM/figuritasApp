@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 
-from models.usuario import Usuario
+from services.usuario_service import UsuarioService
+from services.exceptions import DuplicateEmail, InvalidCredentials, NotFound
 from views import usuario_view
 
 usuario_bp = Blueprint("usuario", __name__)
@@ -8,14 +9,15 @@ usuario_bp = Blueprint("usuario", __name__)
 
 @usuario_bp.route("/", methods=["GET"])
 def list_usuarios():
-    return jsonify(usuario_view.serialize_list(Usuario.get_all()))
+    return jsonify(usuario_view.serialize_list(UsuarioService.list_all()))
 
 
 @usuario_bp.route("/<int:id>", methods=["GET"])
 def get_usuario(id):
-    u = Usuario.get_by_id(id)
-    if not u:
-        return jsonify({"error": "Usuario no encontrado"}), 404
+    try:
+        u = UsuarioService.get(id)
+    except NotFound as e:
+        return jsonify({"error": str(e)}), 404
     return jsonify(usuario_view.serialize(u))
 
 
@@ -25,16 +27,20 @@ def create_usuario():
     required = ["apellido", "nombre", "mail", "password"]
     if not all(data.get(k) for k in required):
         return jsonify({"error": f"Faltan campos requeridos: {required}"}), 400
-    if Usuario.get_by_mail(data["mail"]):
-        return jsonify({"error": "El mail ya está registrado"}), 409
-    u = Usuario.create(
-        apellido=data.get("apellido"),
-        nombre=data.get("nombre"),
-        fecha_nacimiento=data.get("fechaNacimiento"),
-        mail=data.get("mail"),
-        direccion=data.get("direccion"),
-        password=data.get("password"),
-    )
+    try:
+        u = UsuarioService.register(
+            apellido=data.get("apellido"),
+            nombre=data.get("nombre"),
+            fecha_nacimiento=data.get("fechaNacimiento"),
+            mail=data.get("mail"),
+            direccion=data.get("direccion"),
+            latitud=data.get("latitud"),
+            longitud=data.get("longitud"),
+            maps_link=data.get("mapsLink"),
+            password=data.get("password"),
+        )
+    except DuplicateEmail as e:
+        return jsonify({"error": str(e)}), 409
     return jsonify(usuario_view.serialize(u)), 201
 
 
@@ -45,8 +51,8 @@ def login_usuario():
     password = data.get("password")
     if not mail or not password:
         return jsonify({"error": "Se requieren mail y password"}), 400
-    u = Usuario.get_by_mail(mail)
-    # Comparación en texto plano: proyecto de aprendizaje, no usar en producción.
-    if not u or u.password != password:
-        return jsonify({"error": "Credenciales inválidas"}), 401
+    try:
+        u = UsuarioService.login(mail, password)
+    except InvalidCredentials as e:
+        return jsonify({"error": str(e)}), 401
     return jsonify(usuario_view.serialize(u))

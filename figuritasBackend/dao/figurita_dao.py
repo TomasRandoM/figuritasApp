@@ -1,17 +1,11 @@
 from db import get_connection
+from entities.figurita import Figurita
 
 
-class Figurita:
-    def __init__(self, id, jugador, pais, nro_figurita, imagen_url=None):
-        self.id = id
-        self.jugador = jugador
-        self.pais = pais
-        self.nro_figurita = nro_figurita
-        self.imagen_url = imagen_url
-
-    @classmethod
-    def from_row(cls, row):
-        return cls(
+class FiguritaDAO:
+    @staticmethod
+    def _from_row(row):
+        return Figurita(
             id=row["id"],
             jugador=row["jugador"],
             pais=row["pais"],
@@ -27,7 +21,7 @@ class Figurita:
         rows = cursor.fetchall()
         cursor.close()
         conn.close()
-        return [cls.from_row(r) for r in rows]
+        return [cls._from_row(r) for r in rows]
 
     @classmethod
     def get_by_id(cls, id):
@@ -37,7 +31,7 @@ class Figurita:
         row = cursor.fetchone()
         cursor.close()
         conn.close()
-        return cls.from_row(row) if row else None
+        return cls._from_row(row) if row else None
 
     @classmethod
     def search(cls, query):
@@ -53,4 +47,4 @@ class Figurita:
         rows = cursor.fetchall()
         cursor.close()
         conn.close()
-        return [cls.from_row(r) for r in rows]
+        return [cls._from_row(r) for r in rows]

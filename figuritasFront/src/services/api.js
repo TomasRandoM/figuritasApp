@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 const HOST = Platform.select({
   android: 'http://192.168.1.34:5000',
   ios: 'http://localhost:5000',
-  default: 'http://192.168.1.34:5000',
+  default: 'http://localhost:5000',
 });
 
 export const API_BASE = `${HOST}/api`;

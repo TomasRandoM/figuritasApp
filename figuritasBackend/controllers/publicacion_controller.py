@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 
-from models.publicacion import PublicacionFigurita
+from services.publicacion_service import PublicacionService
+from services.exceptions import NotFound, ValidationError
 from views import publicacion_view
 
 publicacion_bp = Blueprint("publicacion", __name__)
@@ -10,26 +11,19 @@ publicacion_bp = Blueprint("publicacion", __name__)
 def list_publicaciones():
     usuario_id = request.args.get("usuario_id", type=int)
     q = request.args.get("q")
-    if usuario_id:
-        return jsonify(
-            publicacion_view.serialize_list(
-                PublicacionFigurita.get_by_usuario(usuario_id)
-            )
-        )
-    if q:
-        return jsonify(
-            publicacion_view.serialize_list(PublicacionFigurita.search(q))
-        )
     return jsonify(
-        publicacion_view.serialize_list(PublicacionFigurita.get_all())
+        publicacion_view.serialize_list(
+            PublicacionService.list(usuario_id=usuario_id, query=q)
+        )
     )
 
 
 @publicacion_bp.route("/<int:id>", methods=["GET"])
 def get_publicacion(id):
-    pub = PublicacionFigurita.get_by_id(id)
-    if not pub:
-        return jsonify({"error": "Publicacion no encontrada"}), 404
+    try:
+        pub = PublicacionService.get(id)
+    except NotFound as e:
+        return jsonify({"error": str(e)}), 404
     return jsonify(publicacion_view.serialize(pub))
 
 
@@ -44,15 +38,11 @@ def create_publicacion():
             {"error": "Se requieren figuritaId, usuarioId y cantidad"}
         ), 400
     try:
-        cantidad = int(cantidad)
-    except (TypeError, ValueError):
-        return jsonify({"error": "cantidad debe ser entero"}), 400
-    if cantidad <= 0:
-        return jsonify({"error": "cantidad debe ser mayor a 0"}), 400
-
-    pub = PublicacionFigurita.create(
-        figurita_id=int(figurita_id),
-        usuario_id=int(usuario_id),
-        cantidad=cantidad,
-    )
+        pub = PublicacionService.create(
+            figurita_id=figurita_id,
+            usuario_id=usuario_id,
+            cantidad=cantidad,
+        )
+    except ValidationError as e:
+        return jsonify({"error": str(e)}), 400
     return jsonify(publicacion_view.serialize(pub)), 201

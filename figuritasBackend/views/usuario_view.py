@@ -10,6 +10,9 @@ def serialize(usuario):
         ),
         "mail": usuario.mail,
         "direccion": usuario.direccion,
+        "latitud": float(usuario.latitud) if usuario.latitud is not None else None,
+        "longitud": float(usuario.longitud) if usuario.longitud is not None else None,
+        "mapsLink": usuario.maps_link,
     }
 
 
