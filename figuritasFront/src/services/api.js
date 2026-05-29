@@ -4,7 +4,7 @@ import { Platform } from "react-native";
 // Si corrés en un dispositivo físico, reemplazá HOST por la IP LAN de tu PC.
 
 const HOST = Platform.select({
-  android: "http://10.0.2.2:5000",
+  android: "http://192.168.56.1:5000",
   ios: "http://localhost:5000",
   default: "http://localhost:5000",
 });
@@ -45,5 +45,23 @@ export async function apiDelete(path) {
     } catch (_) {}
     throw new Error(`DELETE ${path} -> HTTP ${res.status} ${detail}`);
   }
+  return res.json();
+}
+
+export async function getPlaces(query) {
+  const res = await fetch(`${API_BASE}/places?q=${query}`);
+
+  if (!res.ok) {
+    throw new Error(`Places error -> HTTP ${res.status}`);
+  }
+
+  return res.json();
+}
+
+export async function getPlaceDetails(placeId) {
+  const res = await fetch(`${API_BASE}/places/details?place_id=${placeId}`);
+
+  if (!res.ok) throw new Error("Place details error");
+
   return res.json();
 }

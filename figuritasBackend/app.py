@@ -4,6 +4,7 @@ from flask_cors import CORS
 from controllers.usuario_controller import usuario_bp
 from controllers.figurita_controller import figurita_bp
 from controllers.publicacion_controller import publicacion_bp
+from controllers.google_places_controller import places_bp
 
 
 def create_app():
@@ -13,6 +14,7 @@ def create_app():
     app.register_blueprint(usuario_bp, url_prefix="/api/usuarios")
     app.register_blueprint(figurita_bp, url_prefix="/api/figuritas")
     app.register_blueprint(publicacion_bp, url_prefix="/api/publicaciones")
+    app.register_blueprint(places_bp, url_prefix="/api/places")
 
     @app.route("/")
     def index():

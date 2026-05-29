@@ -3,12 +3,12 @@ import {
   View, Text, FlatList, StyleSheet, RefreshControl, ActivityIndicator, Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Linking } from 'react-native';
 
 import UsuarioController from '../controllers/UsuarioController';
 import PublicacionController from '../controllers/PublicacionController';
 import FiguritaCard from '../components/FiguritaCard';
 import { useAuth } from '../contexts/AuthContext';
-import { Ionicons } from '@expo/vector-icons';
 
 const NAVY  = '#0D1B2A';
 const GOLD  = '#D4AF37';
@@ -48,7 +48,6 @@ export default function PerfilScreen({ route }) {
 
   const handleDelete = async (publicacionId) => {
     try {
-      console.log(123);
       const ok = await PublicacionController.delete({
         publicacionId,
       });
@@ -64,23 +63,19 @@ export default function PerfilScreen({ route }) {
   };
 
   const totalDisponibles = publicaciones.reduce((acc, p) => acc + p.cantidad, 0);
-
+  console.log("USUARIO:", usuario);
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      
+
       <View style={styles.headerRow}>
-
         <View style={styles.headerLeft}>
-
           <View style={styles.headerAccent} />
-
           <View style={styles.headerTextWrap}>
             <Text style={styles.headerSub}>MUNDIAL 2026</Text>
             <Text style={styles.headerTitle}>
               {isOwnProfile ? 'Perfil' : 'Perfil de usuario'}
             </Text>
           </View>
-
         </View>
 
         {isOwnProfile && (
@@ -88,70 +83,188 @@ export default function PerfilScreen({ route }) {
             <Text style={styles.logout}>Cerrar sesión</Text>
           </Pressable>
         )}
-
       </View>
+
       <View style={styles.userBox}>
         {usuario ? (
           <>
             <Text style={styles.line}>{usuario.nombreCompleto}</Text>
             <Text style={styles.line}>Edad: {usuario.edad ?? '-'}</Text>
             <Text style={styles.line}>{usuario.mail}</Text>
-            <Text style={styles.line}>{usuario.direccion}</Text>
+
+            {usuario.maps_link ? (
+              <Pressable
+                onPress={() => Linking.openURL(usuario.maps_link)}
+                style={styles.mapButton}
+              >
+                <Text style={styles.mapButtonText}>
+                  Ver dirección en Google Maps
+                </Text>
+              </Pressable>
+            ) : (
+              <Text style={styles.line}>{usuario.direccion}</Text>
+            )}
           </>
         ) : loading ? (
           <ActivityIndicator />
         ) : (
-          <Text style={styles.error}>{error || 'No se pudo cargar el usuario.'}</Text>
+          <Text style={styles.error}>
+            {error || 'No se pudo cargar el usuario.'}
+          </Text>
         )}
       </View>
 
-      <Text style={styles.section}>{isOwnProfile ? 'Mis Figuritas' : 'Figuritas publicadas'}</Text>
+      <Text style={styles.section}>
+        {isOwnProfile ? 'Mis Figuritas' : 'Figuritas publicadas'}
+      </Text>
 
       <FlatList
         data={publicaciones}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
-        <View style={styles.cardContainer}>
-          <FiguritaCard
-            figurita={item.figurita}
-            cantidad={item.cantidad}
-            onPerfil = {isOwnProfile}
-            onDelete = {() => handleDelete(item.id)}
-          />  
-        </View>
-      )}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
+          <View style={styles.cardContainer}>
+            <FiguritaCard
+              figurita={item.figurita}
+              cantidad={item.cantidad}
+              onPerfil={isOwnProfile}
+              onDelete={() => handleDelete(item.id)}
+            />
+          </View>
+        )}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={load} />
+        }
         contentContainerStyle={{ paddingBottom: 24 }}
         ListEmptyComponent={
           !loading ? (
             <Text style={styles.empty}>
-              {error ? `Error: ${error}` : (isOwnProfile ? 'No tenés figuritas publicadas.' : 'Este usuario no tiene publicaciones.')}
+              {error
+                ? `Error: ${error}`
+                : (isOwnProfile
+                    ? 'No tenés figuritas publicadas.'
+                    : 'Este usuario no tiene publicaciones.')}
             </Text>
           ) : null
         }
       />
 
-      <Text style={styles.footer}>Figuritas disponibles: {totalDisponibles}</Text>
+      <Text style={styles.footer}>
+        Figuritas disponibles: {totalDisponibles}
+      </Text>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 16, backgroundColor: NAVY },
-  logout: { fontSize: 13, color: GOLD, borderWidth: 1, borderColor: 'rgba(212,175,55,0.30)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, overflow: 'hidden'},
-  userBox: { backgroundColor: '#132238', borderWidth: 1, borderColor: 'rgba(212,175,55,0.25)', borderRadius: 24, padding: 20, marginBottom: 20,
-},
-  line: { fontSize: 14, marginVertical: 2, color: LIGHT },
-  section: {fontSize: 24, fontWeight: '700', color: GOLD, extAlign: 'center', marginBottom: 18},
-  footer: { textAlign: 'right', marginTop: 10, marginBottom: 12, fontSize: 14, color: MUTED},
-  empty: { textAlign: 'center', marginTop: 24, color: '#666' },
-  error: { color: '#a00' },
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    backgroundColor: NAVY,
+  },
 
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, marginBottom: 18 },
-  header: { flexDirection: 'row', alignItems: 'center', marginTop: 8, marginBottom: 18, gap: 10 },
-  headerTextWrap: { gap: 1 },
-  headerSub: { fontSize: 10, fontWeight: '700', color: GOLD, letterSpacing: 2.5 },
-  headerTitle: { fontSize: 26, fontWeight: '800', color: LIGHT, letterSpacing: 0.3 },
-  headerAccent: { width: 4, height: 44, borderRadius: 4, backgroundColor: GOLD },
-  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10},
+  logout: {
+    fontSize: 13,
+    color: GOLD,
+    borderWidth: 1,
+    borderColor: 'rgba(212,175,55,0.30)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+
+  userBox: {
+    backgroundColor: '#132238',
+    borderWidth: 1,
+    borderColor: 'rgba(212,175,55,0.25)',
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 20,
+  },
+
+  line: {
+    fontSize: 14,
+    marginVertical: 2,
+    color: LIGHT,
+  },
+
+  section: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: GOLD,
+    marginBottom: 18,
+  },
+
+  footer: {
+    textAlign: 'right',
+    marginTop: 10,
+    marginBottom: 12,
+    fontSize: 14,
+    color: MUTED,
+  },
+
+  empty: {
+    textAlign: 'center',
+    marginTop: 24,
+    color: '#666',
+  },
+
+  error: {
+    color: '#a00',
+  },
+
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 12,
+    marginBottom: 18,
+  },
+
+  headerTextWrap: {
+    gap: 1,
+  },
+
+  headerSub: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: GOLD,
+    letterSpacing: 2.5,
+  },
+
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: LIGHT,
+  },
+
+  headerAccent: {
+    width: 4,
+    height: 44,
+    borderRadius: 4,
+    backgroundColor: GOLD,
+  },
+
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  mapButton: {
+    marginTop: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: GOLD,
+    backgroundColor: 'rgba(212,175,55,0.10)',
+    alignSelf: 'flex-start',
+  },
+
+  mapButtonText: {
+    color: GOLD,
+    fontWeight: '700',
+    fontSize: 13,
+  },
 });

@@ -36,7 +36,7 @@ def create_usuario():
             direccion=data.get("direccion"),
             latitud=data.get("latitud"),
             longitud=data.get("longitud"),
-            maps_link=data.get("mapsLink"),
+            maps_link=data.get("maps_link") or data.get("mapsLink"),
             password=data.get("password"),
         )
     except DuplicateEmail as e:

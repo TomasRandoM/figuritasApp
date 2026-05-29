@@ -1,5 +1,5 @@
 def serialize(usuario):
-    return {
+    result = {
         "id": usuario.id,
         "apellido": usuario.apellido,
         "nombre": usuario.nombre,
@@ -12,8 +12,10 @@ def serialize(usuario):
         "direccion": usuario.direccion,
         "latitud": float(usuario.latitud) if usuario.latitud is not None else None,
         "longitud": float(usuario.longitud) if usuario.longitud is not None else None,
-        "mapsLink": usuario.maps_link,
+        "maps_link": usuario.maps_link,
     }
+    return result
+
 
 
 def serialize_list(usuarios):
